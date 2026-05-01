@@ -1,0 +1,26 @@
+{
+    "tasks": [],
+    "habits": [],
+    "goals": [],
+    "notes": "صص",
+    "focusMinutes": 0,
+    "completedPomodoros": 0,
+    "weeklyFocusTarget": 300,
+    "streak": 1,
+    "lastActiveDate": "Fri May 01 2026",
+    "dayBlueprint": {
+        "date": "2026-05-01",
+        "workStart": "08:00",
+        "workEnd": "16:00",
+        "utilization": 9,
+        "blocks": [
+            {
+                "taskId": "1777640670261-pliue0x",
+                "title": "مذاكره اناتومي",
+                "from": "08:00",
+                "to": "08:45",
+                "priority": "medium"
+            }
+        ]
+    }
+}
