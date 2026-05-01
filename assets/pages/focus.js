@@ -79,12 +79,20 @@
           </select>
         </div>
       </div>
-      <div class="timer-controls">
-        <button id="playQuran" class="btn-primary" type="button">تشغيل القرآن</button>
-        <button id="pauseQuran" class="btn-secondary" type="button">إيقاف القرآن</button>
-        <button id="toggleReadMode" class="btn-secondary" type="button">وضع القراءة الواضحة</button>
+      <div class="tm-audio-player">
+        <div class="tm-audio-controls">
+          <button id="playQuran" class="btn-primary btn-icon"><i class="ri-play-fill"></i></button>
+          <button id="pauseQuran" class="btn-secondary btn-icon" style="display:none;"><i class="ri-pause-fill"></i></button>
+          <button id="nextQuran" class="btn-secondary btn-icon"><i class="ri-skip-forward-fill"></i></button>
+          <button id="toggleReadMode" class="btn-secondary btn-icon" title="وضع القراءة"><i class="ri-book-open-fill"></i></button>
+        </div>
+        <div class="tm-audio-progress">
+          <span id="audioCurrent">00:00</span>
+          <input type="range" id="audioSeek" min="0" max="100" value="0">
+          <span id="audioDuration">00:00</span>
+        </div>
       </div>
-      <audio id="quranPlayer" preload="none" controls style="width:100%; margin-top:.6rem;"></audio>
+      <audio id="quranPlayer" preload="auto" style="display:none;"></audio>
       <div id="surahReaderWrap" class="surah-reader-wrap">
         <div class="surah-reader-head">
           <strong id="surahTitle">نص السورة</strong>
@@ -409,6 +417,48 @@
   quranVolume.oninput = () => {
     quranPlayer.volume = Number(quranVolume.value);
   };
+  
+  const playBtn = document.getElementById("playQuran");
+  const pauseBtn = document.getElementById("pauseQuran");
+  const nextBtn = document.getElementById("nextQuran");
+  const audioSeek = document.getElementById("audioSeek");
+  const audioCurrent = document.getElementById("audioCurrent");
+  const audioDuration = document.getElementById("audioDuration");
+
+  function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return "00:00";
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = Math.floor(seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  quranPlayer.addEventListener("loadedmetadata", () => {
+    audioDuration.textContent = formatTime(quranPlayer.duration);
+  });
+
+  quranPlayer.addEventListener("timeupdate", () => {
+    if (!quranPlayer.duration) return;
+    audioCurrent.textContent = formatTime(quranPlayer.currentTime);
+    const progress = (quranPlayer.currentTime / quranPlayer.duration) * 100;
+    audioSeek.value = progress;
+  });
+
+  audioSeek.addEventListener("input", () => {
+    if (!quranPlayer.duration) return;
+    const seekTo = (audioSeek.value / 100) * quranPlayer.duration;
+    quranPlayer.currentTime = seekTo;
+  });
+
+  quranPlayer.addEventListener("play", () => {
+    playBtn.style.display = "none";
+    pauseBtn.style.display = "flex";
+  });
+
+  quranPlayer.addEventListener("pause", () => {
+    playBtn.style.display = "flex";
+    pauseBtn.style.display = "none";
+  });
+
   quranPlayer.onended = () => {
     if (quranLoop.value === "surah") {
       quranPlayer.currentTime = 0;
@@ -416,22 +466,34 @@
       return;
     }
     if (quranLoop.value === "next") {
-      const options = Array.from(quranSurah.options);
-      const idx = options.findIndex(o => o.value === quranSurah.value);
-      if (idx >= 0 && idx < options.length - 1) {
-        quranSurah.value = options[idx + 1].value;
-        quranPlayer.src = buildTrackUrl();
-        quranPlayer.play().catch(() => {});
-      }
+      nextBtn.click();
+    } else {
+      playBtn.style.display = "flex";
+      pauseBtn.style.display = "none";
     }
   };
-  document.getElementById("playQuran").onclick = () => {
+
+  playBtn.onclick = () => {
     if (!quranPlayer.src) quranPlayer.src = buildTrackUrl();
     quranPlayer.play().catch(() => {
-      alert("المتصفح قد يطلب تفاعل مباشر بالصوت. اضغط تشغيل من المشغل.");
+      alert("الرجاء التفاعل مع الصفحة أولاً لتتمكن من تشغيل الصوت.");
     });
   };
-  document.getElementById("pauseQuran").onclick = () => quranPlayer.pause();
+  
+  pauseBtn.onclick = () => {
+    quranPlayer.pause();
+  };
+
+  nextBtn.onclick = () => {
+    const options = Array.from(quranSurah.options);
+    const idx = options.findIndex(o => o.value === quranSurah.value);
+    if (idx >= 0 && idx < options.length - 1) {
+      quranSurah.value = options[idx + 1].value;
+      quranPlayer.src = buildTrackUrl();
+      loadSurahText();
+      quranPlayer.play().catch(() => {});
+    }
+  };
 
   await loadQuranData();
   applyAdaptiveCoach();

@@ -282,3 +282,13 @@ footer{border-top:2px solid var(--ink);background:rgba(255,255,255,0.8);backdrop
   .tm-fab-stack{left:10px;bottom:85px}
   footer{flex-direction:column;text-align:center;gap:.5rem}
 }
+
+/* ====== CUSTOM AUDIO PLAYER ====== */
+.tm-audio-player { background: var(--paper-white); border: 2px solid var(--border); border-radius: 12px; padding: 1rem; margin-top: .8rem; display: flex; flex-direction: column; gap: .8rem; box-shadow: 2px 2px 0 var(--shadow-color); transition: all .3s; }
+.tm-audio-player:hover { border-color: var(--accent-green); box-shadow: 4px 4px 0 rgba(42, 157, 143, 0.2); }
+.tm-audio-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+.tm-audio-controls .btn-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; padding: 0; }
+.tm-audio-progress { display: flex; align-items: center; gap: .8rem; font-family: monospace; font-size: .9rem; font-weight: 700; color: var(--ink-light); }
+.tm-audio-progress input[type="range"] { flex: 1; height: 6px; border-radius: 3px; background: var(--border); border: none; padding: 0; appearance: none; cursor: pointer; }
+.tm-audio-progress input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent-red); cursor: pointer; transition: transform .2s; }
+.tm-audio-progress input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
