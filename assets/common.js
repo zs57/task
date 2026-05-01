@@ -13,7 +13,7 @@ window.TimeMaster = (() => {
 
   
 
-    async function load() {
+  async function load() {
     const raw = localStorage.getItem("timemaster_data");
     let data = raw ? JSON.parse(raw) : { ...defaults };
     data.tasks = (data.tasks || []).map(task => ({
@@ -26,10 +26,8 @@ window.TimeMaster = (() => {
     return data;
   }
 
-  ));
-  }
-
-  );
+  async function save(data) {
+    localStorage.setItem("timemaster_data", JSON.stringify({ ...defaults, ...data }));
   }
 
   function uid() {
