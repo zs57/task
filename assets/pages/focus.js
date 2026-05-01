@@ -328,13 +328,13 @@
     const surahId = Number(quranSurah.value || 1);
     surahText.textContent = "جاري تحميل النص...";
     try {
-      const res = await fetch(`quran_api.php?action=surah_text&surah=${surahId}`).then(r => r.json());
-      if (!res.ok || !res.surah) {
+      const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/quran-uthmani`).then(r => r.json());
+      if (res.code !== 200 || !res.data) {
         surahText.textContent = "تعذر تحميل نص السورة حاليًا.";
         return;
       }
-      const ayahs = res.surah.ayahs || [];
-      surahTitle.textContent = `سورة ${res.surah.name}`;
+      const ayahs = res.data.ayahs || [];
+      surahTitle.textContent = `سورة ${res.data.name}`;
       surahMeta.textContent = `عدد الآيات: ${ayahs.length}`;
       surahText.innerHTML = ayahs.map(a => `<span class="ayah">${a.text} <span class="ayah-num">﴿${a.numberInSurah}﴾</span></span>`).join(" ");
     } catch (error) {
@@ -343,20 +343,48 @@
   }
 
   async function loadQuranData() {
-    const [rRes, sRes] = await Promise.all([
-      fetch("quran_api.php?action=readers").then(r => r.json()),
-      fetch("quran_api.php?action=suwar").then(r => r.json())
-    ]);
-    if (!rRes.ok || !sRes.ok) {
-      alert("تعذر تحميل بيانات القرآن من API. تأكد من اتصال الإنترنت.");
-      return;
+    try {
+      const [rRes, sRes] = await Promise.all([
+        fetch("https://mp3quran.net/api/v3/reciters?language=ar").then(r => r.json()),
+        fetch("https://mp3quran.net/api/v3/suwar?language=ar").then(r => r.json())
+      ]);
+      
+      if (!rRes.reciters || !sRes.suwar) {
+        alert("تعذر تحميل بيانات القرآن من API. تأكد من اتصال الإنترنت.");
+        return;
+      }
+      
+      suwar = sRes.suwar.map(s => ({ id: s.id, name: s.name }));
+      
+      const items = [];
+      rRes.reciters.forEach(reciter => {
+        const moshafList = reciter.moshaf || [];
+        moshafList.forEach(moshaf => {
+          let server = (moshaf.server || "").trim();
+          if (!server) return;
+          if (!server.endsWith("/")) server += "/";
+          let surahList = (moshaf.surah_list || "").split(",").filter(x => x).map(Number);
+          if (!surahList.length) surahList = Array.from({length: 114}, (_, i) => i + 1);
+          
+          items.push({
+            id: reciter.id + ":" + moshaf.id,
+            reciterId: reciter.id,
+            reciterName: reciter.name || "قارئ",
+            moshafName: moshaf.name || "مصحف",
+            server: server,
+            surahList: surahList
+          });
+        });
+      });
+      
+      readers = items;
+      renderReaderOptions(readers, false);
+      readerSearchHint.textContent = `تم تحميل ${readers.length} قارئ/رواية`;
+      quranPlayer.src = buildTrackUrl();
+      await loadSurahText();
+    } catch(err) {
+      alert("حدث خطأ في الاتصال بخوادم القرآن الكريم.");
     }
-    readers = rRes.readers;
-    suwar = sRes.suwar;
-    renderReaderOptions(readers, false);
-    readerSearchHint.textContent = `تم تحميل ${readers.length} قارئ/رواية`;
-    quranPlayer.src = buildTrackUrl();
-    await loadSurahText();
   }
 
   quranReader.onchange = () => {
