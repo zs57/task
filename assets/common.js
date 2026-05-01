@@ -11,19 +11,11 @@ window.TimeMaster = (() => {
     lastActiveDate: null
   };
 
-  async function api(action, payload = {}) {
-    const res = await fetch("api.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, payload })
-    });
-    return res.json();
-  }
+  
 
-  async function load() {
-    const res = await api("getData");
-    if (!res.ok) return { ...defaults };
-    const data = { ...defaults, ...res.data };
+    async function load() {
+    const raw = localStorage.getItem("timemaster_data");
+    let data = raw ? JSON.parse(raw) : { ...defaults };
     data.tasks = (data.tasks || []).map(task => ({
       status: "todo",
       recurrence: "none",
@@ -34,8 +26,10 @@ window.TimeMaster = (() => {
     return data;
   }
 
-  async function save(data) {
-    await api("saveData", { ...defaults, ...data });
+  ));
+  }
+
+  );
   }
 
   function uid() {
@@ -84,43 +78,43 @@ window.TimeMaster = (() => {
   function nav(activePath) {
     return `
       <nav>
-        <a class="nav-logo" href="index.php">Time<span>Master</span></a>
+        <a class="nav-logo" href="index.html">Time<span>Master</span></a>
         <ul class="nav-links">
-          <li><a href="tasks.php" class="${activePath === "tasks" ? "active-link" : ""}">${ic.tasks} المهام</a></li>
-          <li><a href="kanban.php" class="${activePath === "kanban" ? "active-link" : ""}">${ic.kanban} كانبان</a></li>
-          <li><a href="matrix.php" class="${activePath === "matrix" ? "active-link" : ""}">${ic.matrix} المصفوفة</a></li>
-          <li><a href="focus.php" class="${activePath === "focus" ? "active-link" : ""}">${ic.focus} التركيز</a></li>
-          <li><a href="habits.php" class="${activePath === "habits" ? "active-link" : ""}">${ic.habits} العادات</a></li>
-          <li><a href="goals.php" class="${activePath === "goals" ? "active-link" : ""}">${ic.goals} الأهداف</a></li>
-          <li><a href="reports.php" class="${activePath === "reports" ? "active-link" : ""}">${ic.reports} التقارير</a></li>
+          <li><a href="tasks.html" class="${activePath === "tasks" ? "active-link" : ""}">${ic.tasks} المهام</a></li>
+          <li><a href="kanban.html" class="${activePath === "kanban" ? "active-link" : ""}">${ic.kanban} كانبان</a></li>
+          <li><a href="matrix.html" class="${activePath === "matrix" ? "active-link" : ""}">${ic.matrix} المصفوفة</a></li>
+          <li><a href="focus.html" class="${activePath === "focus" ? "active-link" : ""}">${ic.focus} التركيز</a></li>
+          <li><a href="habits.html" class="${activePath === "habits" ? "active-link" : ""}">${ic.habits} العادات</a></li>
+          <li><a href="goals.html" class="${activePath === "goals" ? "active-link" : ""}">${ic.goals} الأهداف</a></li>
+          <li><a href="reports.html" class="${activePath === "reports" ? "active-link" : ""}">${ic.reports} التقارير</a></li>
         </ul>
-        <a class="nav-cta" href="backup.php">${ic.backup} نسخ احتياطي</a>
+        <a class="nav-cta" href="backup.html">${ic.backup} نسخ احتياطي</a>
         <div class="hamburger" onclick="document.getElementById('mobileMenu').classList.toggle('open')">
           <span></span><span></span><span></span>
         </div>
       </nav>
       <div id="mobileMenu" class="mobile-menu">
         <button class="mobile-close" onclick="this.parentElement.classList.remove('open')">✕</button>
-        <a href="index.php">${ic.home} الرئيسية</a>
-        <a href="tasks.php">${ic.tasks} المهام</a>
-        <a href="kanban.php">${ic.kanban} كانبان</a>
-        <a href="matrix.php">${ic.matrix} المصفوفة</a>
-        <a href="focus.php">${ic.focus} التركيز</a>
-        <a href="habits.php">${ic.habits} العادات</a>
-        <a href="goals.php">${ic.goals} الأهداف</a>
-        <a href="reports.php">${ic.reports} التقارير</a>
-        <a href="backup.php">${ic.backup} النسخ الاحتياطي</a>
+        <a href="index.html">${ic.home} الرئيسية</a>
+        <a href="tasks.html">${ic.tasks} المهام</a>
+        <a href="kanban.html">${ic.kanban} كانبان</a>
+        <a href="matrix.html">${ic.matrix} المصفوفة</a>
+        <a href="focus.html">${ic.focus} التركيز</a>
+        <a href="habits.html">${ic.habits} العادات</a>
+        <a href="goals.html">${ic.goals} الأهداف</a>
+        <a href="reports.html">${ic.reports} التقارير</a>
+        <a href="backup.html">${ic.backup} النسخ الاحتياطي</a>
       </div>
     `;
   }
 
   function mobileBottomNav(activePath) {
     const items = [
-      { path: "index", href: "index.php", icon: "ri-home-4-line", label: "الرئيسية" },
-      { path: "tasks", href: "tasks.php", icon: "ri-task-line", label: "المهام" },
-      { path: "focus", href: "focus.php", icon: "ri-focus-3-line", label: "التركيز" },
-      { path: "habits", href: "habits.php", icon: "ri-heart-pulse-line", label: "العادات" },
-      { path: "reports", href: "reports.php", icon: "ri-bar-chart-box-line", label: "التقارير" },
+      { path: "index", href: "index.html", icon: "ri-home-4-line", label: "الرئيسية" },
+      { path: "tasks", href: "tasks.html", icon: "ri-task-line", label: "المهام" },
+      { path: "focus", href: "focus.html", icon: "ri-focus-3-line", label: "التركيز" },
+      { path: "habits", href: "habits.html", icon: "ri-heart-pulse-line", label: "العادات" },
+      { path: "reports", href: "reports.html", icon: "ri-bar-chart-box-line", label: "التقارير" },
     ];
     return `<nav class="mobile-bottom-nav">${items.map(i =>
       `<a href="${i.href}" class="${activePath === i.path ? 'active' : ''}"><span class="nav-icon"><i class="${i.icon}"></i></span><span>${i.label}</span></a>`
@@ -138,7 +132,7 @@ window.TimeMaster = (() => {
         </div>
       </section>
       <footer>
-        <a class="footer-logo" href="index.php">Time<span>Master</span></a>
+        <a class="footer-logo" href="index.html">Time<span>Master</span></a>
         <span class="footer-copy">© 2026 TimeMaster Pro</span>
       </footer>
       ${mobileBottomNav(activePath)}
@@ -146,15 +140,15 @@ window.TimeMaster = (() => {
   }
 
   const routes = [
-    { label: "الرئيسية", href: "index.php" },
-    { label: "المهام الذكية", href: "tasks.php" },
-    { label: "لوحة كانبان", href: "kanban.php" },
-    { label: "مصفوفة الأولويات", href: "matrix.php" },
-    { label: "التركيز والقرآن", href: "focus.php" },
-    { label: "العادات", href: "habits.php" },
-    { label: "الأهداف", href: "goals.php" },
-    { label: "التقارير", href: "reports.php" },
-    { label: "النسخ الاحتياطي", href: "backup.php" }
+    { label: "الرئيسية", href: "index.html" },
+    { label: "المهام الذكية", href: "tasks.html" },
+    { label: "لوحة كانبان", href: "kanban.html" },
+    { label: "مصفوفة الأولويات", href: "matrix.html" },
+    { label: "التركيز والقرآن", href: "focus.html" },
+    { label: "العادات", href: "habits.html" },
+    { label: "الأهداف", href: "goals.html" },
+    { label: "التقارير", href: "reports.html" },
+    { label: "النسخ الاحتياطي", href: "backup.html" }
   ];
 
   function toast(message) {
