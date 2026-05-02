@@ -79,26 +79,55 @@
     const countEl = document.getElementById("taskCount");
     if (countEl) countEl.textContent = `${items.length} مهمة`;
 
-    list.innerHTML = items.length === 0
-      ? `<div class="muted-note" style="text-align:center;padding:2rem;">لا توجد مهام${filter !== "all" ? " في هذا التصنيف" : " حتى الآن. أضف أول مهمة!"}</div>`
-      : items.map(task => `
-      <div class="task-item ${task.done ? "done" : ""}" style="${isOverdue(task) ? "border-right:4px solid var(--accent-red);" : ""}">
-        <div>
-          <strong>${task.done ? '<i class="ri-checkbox-circle-fill" style="color:var(--accent-green)"></i>' : '<i class="ri-time-line"></i>'} ${task.title}</strong>
-          ${task.notes ? `<div style="font-size:.85rem;color:var(--ink-light);margin-top:2px;"><i class="ri-sticky-note-line"></i> ${task.notes}</div>` : ""}
-          <div class="task-meta">
-            <small><i class="ri-calendar-line"></i> ${TimeMaster.formatDate(task.dueDate)}${isOverdue(task) ? ' <span style="color:var(--accent-red)">متأخر</span>' : ""}</small>
-            <small><i class="ri-timer-line"></i> ${task.estimate} دقيقة</small>
-            <small><i class="ri-loop-left-line"></i> ${task.recurrence === "daily" ? "يومي" : task.recurrence === "weekly" ? "أسبوعي" : "—"}</small>
+    if (items.length === 0) {
+      list.innerHTML = `<div class="muted-note" style="text-align:center;padding:2rem;">لا توجد مهام${filter !== "all" ? " في هذا التصنيف" : " حتى الآن. أضف أول مهمة!"}</div>`;
+      return;
+    }
+
+    list.innerHTML = ""; // Clear list
+    
+    // 🔥 Extreme Performance: Chunked Rendering for weak devices
+    const CHUNK_SIZE = 15;
+    let currentIndex = 0;
+
+    function renderChunk() {
+      let fragment = document.createDocumentFragment();
+      let end = Math.min(currentIndex + CHUNK_SIZE, items.length);
+
+      for (let i = currentIndex; i < end; i++) {
+        const task = items[i];
+        const el = document.createElement("div");
+        el.className = `task-item ${task.done ? "done" : ""}`;
+        if (isOverdue(task)) el.style.borderRight = "4px solid var(--accent-red)";
+        
+        el.innerHTML = `
+          <div>
+            <strong>${task.done ? '<i class="ri-checkbox-circle-fill" style="color:var(--accent-green)"></i>' : '<i class="ri-time-line"></i>'} ${task.title}</strong>
+            ${task.notes ? `<div style="font-size:.85rem;color:var(--ink-light);margin-top:2px;"><i class="ri-sticky-note-line"></i> ${task.notes}</div>` : ""}
+            <div class="task-meta">
+              <small><i class="ri-calendar-line"></i> ${TimeMaster.formatDate(task.dueDate)}${isOverdue(task) ? ' <span style="color:var(--accent-red)">متأخر</span>' : ""}</small>
+              <small><i class="ri-timer-line"></i> ${task.estimate} دقيقة</small>
+              <small><i class="ri-loop-left-line"></i> ${task.recurrence === "daily" ? "يومي" : task.recurrence === "weekly" ? "أسبوعي" : "—"}</small>
+            </div>
           </div>
-        </div>
-        <div>
-          <span class="badge ${task.priority}">${task.priority === "high" ? "عالية" : task.priority === "medium" ? "متوسطة" : "منخفضة"}</span>
-          <button class="chip" data-action="toggle" data-id="${task.id}">${task.done ? '<i class="ri-arrow-go-back-line"></i>' : '<i class="ri-check-line"></i>'}</button>
-          <button class="chip" data-action="delete" data-id="${task.id}"><i class="ri-delete-bin-line"></i></button>
-        </div>
-      </div>
-    `).join("");
+          <div>
+            <span class="badge ${task.priority}">${task.priority === "high" ? "عالية" : task.priority === "medium" ? "متوسطة" : "منخفضة"}</span>
+            <button class="chip" data-action="toggle" data-id="${task.id}">${task.done ? '<i class="ri-arrow-go-back-line"></i>' : '<i class="ri-check-line"></i>'}</button>
+            <button class="chip" data-action="delete" data-id="${task.id}"><i class="ri-delete-bin-line"></i></button>
+          </div>
+        `;
+        fragment.appendChild(el);
+      }
+      
+      list.appendChild(fragment);
+      currentIndex = end;
+      
+      if (currentIndex < items.length) {
+        requestAnimationFrame(renderChunk);
+      }
+    }
+    
+    requestAnimationFrame(renderChunk);
   }
 
   function priorityWeight(p) { return p === "high" ? 3 : p === "medium" ? 2 : 1; }
